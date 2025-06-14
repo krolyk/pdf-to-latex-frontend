@@ -1,20 +1,20 @@
 'use client'
 
 import { useTheme } from './providers/theme-provider'
-import { Sun, Moon } from 'lucide-react'
+import { Sun, Moon, FileText } from 'lucide-react'
 
 export function Header() {
   const { theme, toggleTheme } = useTheme()
 
   return (
     <header style={{ 
-      borderBottom: '1px solid var(--border)',
-      backgroundColor: 'var(--card)',
+      backgroundColor: 'transparent',
       padding: '1rem 2rem',
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      width: '100%'
+      width: '100%',
+      backdropFilter: 'blur(8px)'
     }}>
       <div style={{ 
         maxWidth: '1200px', 
@@ -24,8 +24,13 @@ export function Header() {
         alignItems: 'center'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '1.5rem' }}>📄</span>
-          <span style={{ fontSize: '1.2rem', fontWeight: '600' }}>
+          <FileText size={24} color="#ef4444" />
+          <span style={{ 
+            fontSize: '1.2rem', 
+            fontWeight: '600',
+            color: '#ef4444',
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+          }}>
             PDF to LaTeX
           </span>
         </div>
@@ -33,7 +38,11 @@ export function Header() {
         <button
           onClick={toggleTheme}
           className="btn btn-secondary"
-          style={{ padding: '0.5rem' }}
+          style={{ 
+            padding: '0.5rem',
+            backgroundColor: 'var(--secondary)',
+            color: 'var(--secondary-foreground)'
+          }}
         >
           {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
         </button>

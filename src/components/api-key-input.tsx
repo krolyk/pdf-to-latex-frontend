@@ -11,35 +11,41 @@ interface ApiKeyInputProps {
 export function ApiKeyInput({ apiKey, onApiKeyChange }: ApiKeyInputProps) {
   const [showKey, setShowKey] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [tempKey, setTempKey] = useState('')
-  const [hasSaved, setHasSaved] = useState(false)
+  const [tempKey, setTempKey] = useState(apiKey)
 
   const handleSave = () => {
     onApiKeyChange(tempKey)
     setIsEditing(false)
     setShowKey(false)
-    setHasSaved(true)
   }
 
   const handleEdit = () => {
     setIsEditing(true)
     setTempKey(apiKey)
-    setHasSaved(false) // Reset saved state when editing
   }
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault()
-    const pastedText = e.clipboardData.getData('text/plain')
-    setTempKey(pastedText)
-    setShowKey(true) // Show the pasted key temporarily
+  // Prevent copy/paste and other actions
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isEditing) {
+      e.preventDefault()
+      return
+    }
+
+    // Allow only specific keys when editing
+    const allowedKeys = [
+      'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 
+      'Tab', 'Home', 'End'
+    ]
+    if (!allowedKeys.includes(e.key) && e.ctrlKey) {
+      e.preventDefault()
+    }
   }
 
-  // Format the displayed key (show first 3 characters only when saved)
+  // Format the displayed key (show first 3 and last 4 characters when not editing)
   const formatDisplayKey = (key: string) => {
     if (!key) return ''
-    if (isEditing) return key // Show full key when editing
-    if (key.length <= 3) return '•'.repeat(key.length)
-    return `${key.substring(0, 3)}${'•'.repeat(key.length - 3)}`
+    if (key.length <= 7) return '•'.repeat(key.length)
+    return `${key.substring(0, 3)}${'•'.repeat(key.length - 7)}${key.substring(key.length - 4)}`
   }
 
   return (
@@ -61,10 +67,11 @@ export function ApiKeyInput({ apiKey, onApiKeyChange }: ApiKeyInputProps) {
           type={isEditing ? (showKey ? 'text' : 'password') : 'password'}
           value={isEditing ? tempKey : formatDisplayKey(apiKey)}
           onChange={(e) => isEditing && setTempKey(e.target.value)}
-          onPaste={handlePaste}
-          onCopy={(e) => e.preventDefault()}
-          onCut={(e) => e.preventDefault()}
-          placeholder="Paste your Gemini API key..."
+          onKeyDown={handleKeyDown}
+          onCopy={(e) => !isEditing && e.preventDefault()}
+          onPaste={(e) => !isEditing && e.preventDefault()}
+          onCut={(e) => !isEditing && e.preventDefault()}
+          placeholder="Enter your Gemini API key..."
           className="input"
           style={{ flex: 1 }}
           readOnly={!isEditing}
@@ -95,7 +102,6 @@ export function ApiKeyInput({ apiKey, onApiKeyChange }: ApiKeyInputProps) {
             onClick={handleEdit}
             className="btn btn-primary"
             style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            disabled={!apiKey}
           >
             <Pencil size={16} /> Edit
           </button>
